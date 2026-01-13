@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  kafka:
+    image: confluentinc/cp-kafka:7.8.3
+    container_name: kafka
+    ports:
+      - "9092:9092"
+
+    environment:
+      KAFKA_KRAFT_MODE: 'true'
+
+      CLUSTER_ID: '1L6g7nGhu-eAKfl--X25wo'
+      KAFKA_NODE_ID: 1
+
+      KAFKA_PROCESS_ROLES: broker, controller # In KRaft mode a Node can play both broker and controller roles. Broker acts as a server that stores and serves the data and controller acts as the cluster management.
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093 #<id>@kafka:<port>, this defines which broker is a controller and can vote in important cluster decision. There can be more than 1 KAFKA_CONTROLLER_QUORUM_VOTERS.
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1 # Copy of kafka metadata that keeps track of which messages each consumer has read. 1 means that there is no backup.
+
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092, CONTROLLER://0.0.0.0:9093 # PLAINTEXT is where producers and consumers connect to Kafka.
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092 # Tells client to connect at this endpoint.
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+
+      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs # Stores logging at this path inside the container
+
+    volumes:
+      - kafka_kraft:/var/lib/kafka/data # Stores data at this path inside the container
+
+volumes:
+  kafka_kraft:
